@@ -1,0 +1,45 @@
+[EE574] CAD for VLSI
+
+[TERM PROJECT]
+
+    [GOAL: implement dogleg channer router]
+
+    You may have to implement some functions in graph.cpp, router.h and modify some functions on some source codes.
+
+    There are three examples in example.h.
+
+    Your output must be as below:
+
+    Output file name is "routing_{net_names}_{#tracks}_{#vias}_{#doglegs}.txt" on "results" directory
+
+    Exmaple: 
+
+        For net A, B, C and 2 tracks, 8 vias, and 1 dogleg,
+
+        Output file name is "routing_ABC_2_8_1.txt" on "results" directory
+
+    Output format:
+
+        For each net,
+
+        [net_name] [track_index]
+
+        Index of track starts from 0 (bottom track).
+
+        Example: 
+
+            For net A, B, C 
+            -------file begin------
+            A 2
+            B 1
+            C 0
+            -------file end--------
+
+            If net B is broken to two nets (b1, b2) and b1 is assigned to track 1 and b2 is assigned to track 0, then,
+            -------file begin------
+            A 1
+            B 1 0
+            C 0
+            -------file end--------
+
+            The tracks for broken net must be listed leftmost one first. 
