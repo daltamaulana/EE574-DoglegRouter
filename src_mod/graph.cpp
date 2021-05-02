@@ -26,54 +26,61 @@ Graph::Graph(int V) {
 	}
 }
 
-// Returns true if the graph contains a cycle, else false.
-// This function is a variation of DFS() in http://www.geeksforgeeks.org/archives/18212
-bool Graph::isCyclic()
-{
+// Method for checking cyclic dependencies in graph
+bool Graph::isCyclic() {
 	// You have to implement here!!
 }
- 
-int Graph::create_or_get_net2int_mapping(ZNet* net) {
-	// numbering a net
-	if (level_net2idx.find(net) == level_net2idx.end() )
-		++n,level_net2idx[net] = n,idx2net_level[n]=net;
 
-	return level_net2idx[net];
+// Method for setting net level to 0 (route immediately)
+void Graph::set_need2route(ZNet* n) {
+	// Set net level to 0
+	levels[level_net2idx[n]] = 0;
 }
 
+// Method for decreasing adjacency level of neighboring nets
+void Graph::decrease_adj_level(ZNet* n) {
+	// Get parent net index
+	int i = create_or_get_net2int_mapping(n);
+	// Reduce child net level
+	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
+		levels[*j]--;
+	}
+}
 
+// Method for getting top nets in the graph
 std::vector<ZNet*> Graph::get_top_nets() {
-	
+	// Declare local variable
 	std::vector<ZNet*> nets;
-
+	// Loop through net lists
 	for(int i=0;i<V;i++) {
 		if ( levels[i] == 0 ) {
 			levels[i]=-1;
 			nets.push_back(idx2net_level[i]);
 		}
 	}
-
+	// Return value
 	return nets;        
 }
 
-
-void Graph::decrease_adj_level(ZNet* n) {
-	int i = create_or_get_net2int_mapping(n);
-	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
-		levels[*j]--;
-	}
+// Getter method for getting int index of a net
+int Graph::create_or_get_net2int_mapping(ZNet* net) {
+	// Create new net map if net is new
+	if (level_net2idx.find(net) == level_net2idx.end() )
+		++n, level_net2idx[net] = n, idx2net_level[n]=net;
+	// Return value
+	return level_net2idx[net];
 }
 
-void Graph::set_need2route(ZNet* n) {
-	levels[level_net2idx[n]]=0;
-}
-  
+// Method for adding edge between vertices
 void Graph::addEdge(ZNet* v, ZNet* w)
 {
-     int V = create_or_get_net2int_mapping(v);
-     int W = create_or_get_net2int_mapping(w);
-     
+	// Find index of the net 
+	int V = create_or_get_net2int_mapping(v);
+	int W = create_or_get_net2int_mapping(w);
+    
+	// Add net to adjacency list
     adj[V].push_back(W); 
+	// Increase net level
     levels[W]++;
 }
  

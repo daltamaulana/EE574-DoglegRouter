@@ -19,14 +19,14 @@ using namespace std;
 //                       Declare Class and Its Attributes                           //
 //////////////////////////////////////////////////////////////////////////////////////
 class Graph {
-    // Declare attributes
-    int n;
-    int V; // Number of graph vertices
-    list<int> *adj; // Pointer to list of adjacency array
-    vector<int> levels; // Level of each graph vertex
-    map<ZNet*,int> level_net2idx; // Variable for mapping net to index
-    map<int,ZNet*> idx2net_level; // Variable for mapping index to net
-    //bool isCyclicUtil(int v, bool visited[], bool *rs);  // used by isCyclic()
+  // Declare attributes
+  int n;
+  int V; // Number of graph vertices
+  list<int> *adj; // Pointer to list of adjacency array
+  vector<int> levels; // Level of each graph vertex
+  map<ZNet*,int> level_net2idx; // Variable for mapping net to index
+  map<int,ZNet*> idx2net_level; // Variable for mapping index to net
+  //bool isCyclicUtil(int v, bool visited[], bool *rs);  // used by isCyclic()
 
   public:
     // Declare constructor
