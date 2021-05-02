@@ -288,8 +288,37 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 		// Declare method
 		// Method for creating vertical constraint graph
 		void create_vcg() {
+			// Declare new graph object
 			m_graph = new Graph(get_nets().size());
-			// construct VCG (please refer to 'graph.h' and 'graph.cpp')
+			
+			// Declare iterator for top terminal
+			std::vector<ZTerm*>::iterator top_iter;
+
+			// Iterate through top terminal
+			for(top_iter=top_terms.begin(); top_iter != top_terms.end(); ++top_iter) {
+				// Declare iterator for bottom terminal (Search terminal with same column)
+				auto bottom_iter = std::find_if(bottom_terms.begin(), bottom_terms.end(), [top_iter](ZTerm* term) {
+					return (*top_iter)->col() == term->col();
+				});
+				// Iterate through bottom terminal (searching terminal with same column)
+				// Found column with top and bottom terminals
+				if (bottom_iter != bottom_terms.end()) {
+					// Check whether top and bottom terminal are on the same net
+					if ((*bottom_iter)->net()->get_name() == (*top_iter)->net()->get_name()) {
+						// Continue to next column
+						continue;
+					} else {
+						// Add new vertices and edge to graph
+						m_graph->addEdge((*top_iter)->net(), (*bottom_iter)->net());
+					}
+				}
+			}
+
+			// Perfoms transitive reduction on the graph
+			m_graph->transitiveReduction();
+
+			// Print graph
+			m_graph->printGraph();
 		}
 
     public:
@@ -302,8 +331,8 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// NOTE: Test sorting
 			sort_route_terms();
 
-			// // Create nets vertical constraint graph
-			// create_vcg();
+			// Create nets vertical constraint graph
+			create_vcg();
 			// // Check graph cyclic property
 			// if ( m_graph->isCyclic() ) { 
 			// 	// You have to implement breaking multi-terminal nets ( re-construct VCG )

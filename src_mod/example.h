@@ -9,23 +9,23 @@
 ////////////////////////////////////////////////////////////////////////////////////
 // Function for generating test case
 void example(ZChannelRouter* router) {
-    // Example 1
-    ZNet* a = new ZNet("A");
-        a->add_term(0,ZUpperTerm);
-        a->add_term(2,ZUpperTerm);
+    // // Example 1
+    // ZNet* a = new ZNet("A");
+    //     a->add_term(0,ZUpperTerm);
+    //     a->add_term(2,ZUpperTerm);
             
-    ZNet* b = new ZNet("B");
-        b->add_term(1,ZUpperTerm);
-        b->add_term(0,ZLowerTerm);
+    // ZNet* b = new ZNet("B");
+    //     b->add_term(1,ZUpperTerm);
+    //     b->add_term(0,ZLowerTerm);
         
-    ZNet* c = new ZNet("C");
-        c->add_term(3,ZUpperTerm);
-        c->add_term(1,ZLowerTerm);
-        c->add_term(2,ZLowerTerm);
+    // ZNet* c = new ZNet("C");
+    //     c->add_term(3,ZUpperTerm);
+    //     c->add_term(1,ZLowerTerm);
+    //     c->add_term(2,ZLowerTerm);
 
-    router->add_net_to_route(a);
-    router->add_net_to_route(b);
-    router->add_net_to_route(c);
+    // router->add_net_to_route(a);
+    // router->add_net_to_route(b);
+    // router->add_net_to_route(c);
 
 	// Example 2
 	/*
@@ -80,4 +80,36 @@ void example(ZChannelRouter* router) {
     router->add_net_to_route(b);
     router->add_net_to_route(c);
 	*/
+
+    // Example 4
+    ZNet* a = new ZNet("A");
+        a->add_term(4,ZUpperTerm);
+        a->add_term(5,ZLowerTerm);
+            
+    ZNet* b = new ZNet("B");
+        b->add_term(1,ZUpperTerm);
+        b->add_term(3,ZUpperTerm);
+        
+    ZNet* c = new ZNet("C");
+        c->add_term(1,ZLowerTerm);
+        c->add_term(5,ZUpperTerm);
+
+    ZNet* d = new ZNet("D");
+        d->add_term(0,ZLowerTerm);
+        d->add_term(2,ZUpperTerm);
+
+    ZNet* e = new ZNet("E");
+        e->add_term(2,ZLowerTerm);
+        e->add_term(6,ZUpperTerm);
+
+    ZNet* f = new ZNet("F");
+        f->add_term(3,ZLowerTerm);
+        f->add_term(6,ZLowerTerm);
+
+    router->add_net_to_route(a);
+    router->add_net_to_route(b);
+    router->add_net_to_route(c);
+    router->add_net_to_route(d);
+    router->add_net_to_route(e);
+    router->add_net_to_route(f);
 }

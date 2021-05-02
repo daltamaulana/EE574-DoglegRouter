@@ -36,9 +36,13 @@ class Graph {
     bool isCyclic(); // Method for checking whether there is a cyclic connection or not
     void set_need2route(ZNet* n); // Method for setting net level to 0 (route immediately)
     void decrease_adj_level(ZNet* n); // Method for decreasing adjacency level of neighboring nets
+    void increase_adj_level(ZNet* n); // NOTE: Method for increasing adjacency level of neighboring nets
     std::vector<ZNet*> get_top_nets(); // Method for getting VCG top nets
     int create_or_get_net2int_mapping(ZNet* n); // Getter method for getting int index of a net
     void addEdge(ZNet* v, ZNet* w); // Method for adding edge between vertices
+    void transitiveReduction(); // NOTE: Method for performing transitive reduction on graph
+    void printGraph(); // NOTE: Method for printing graph
+
 };
 
 #endif

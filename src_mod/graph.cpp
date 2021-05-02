@@ -47,6 +47,16 @@ void Graph::decrease_adj_level(ZNet* n) {
 	}
 }
 
+// NOTE: Method for increasing adjacency level of neighboring nets
+void Graph::increase_adj_level(ZNet* n) {
+	// Get parent net index
+	int i = create_or_get_net2int_mapping(n);
+	// Reduce child net level
+	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
+		levels[*j]++;
+	}
+}
+
 // Method for getting top nets in the graph
 std::vector<ZNet*> Graph::get_top_nets() {
 	// Declare local variable
@@ -77,11 +87,60 @@ void Graph::addEdge(ZNet* v, ZNet* w)
 	// Find index of the net 
 	int V = create_or_get_net2int_mapping(v);
 	int W = create_or_get_net2int_mapping(w);
-    
-	// Add net to adjacency list
-    adj[V].push_back(W); 
-	// Increase net level
-    levels[W]++;
+
+	// Check nets level
+	if (levels[V] >= levels[W]) {
+		// Add net to adjacency list
+		adj[V].push_back(W); 
+		// Increase net level based on parent net
+		levels[W] = levels[V] + 1; // NOTE: This part changed from levels[W]++
+		// Increase net level which connected to w net
+		for(list<int>::iterator iter = adj[W].begin(); iter!=adj[W].end(); ++iter) {
+			ZNet* neighbor_net = idx2net_level[(*iter)];
+			// Call increase_adj_level method
+			increase_adj_level(neighbor_net);
+		}
+	}
+}
+
+// NOTE: Method for performing transitive reduction operation on the graph
+void Graph::transitiveReduction() {
+	// NOTE: Debug purpose
+	for(int i=0; i<V; i++) {
+		std::cout << "Index: " << i << "\tNet name: " << idx2net_level[i]->get_name() << std::endl;
+	}
+	// Iterate through each net adjacency list
+	for(int i=0; i<V; i++) {
+		// NOTE: Debug purpose
+		std::cout << "Net: " << idx2net_level[i]->get_name() << " Adjacency list: ";
+		// Iterate through adjacency list
+		for(list<int>::iterator iter = adj[i].begin(); iter!=adj[i].end(); ++iter) {
+			std::cout << idx2net_level[*iter]->get_name() << " ";
+		}
+		std::cout << "\n" << std::endl;
+
+		// Create remove_if list iterator
+		adj[i].remove_if([this, i](int iter) {
+			return (levels[iter]-levels[i]) > 1;
+		});
+
+		// Iterate through adjacency list
+		for(list<int>::iterator iter = adj[i].begin(); iter!=adj[i].end(); ++iter) {
+			// Loop to removing edge
+		}
+	}
+}
+
+// NOTE: Method for getting vertices count
+void Graph::printGraph() {
+	// Print graph
+	for(int i=0; i<V; i++) {
+		std::cout << "Net " << idx2net_level[i]->get_name() << "-> Level: " << levels[i] << " \tAdjacency list: ";
+		for(auto iter = adj[i].begin(); iter != adj[i].end(); ++iter) {
+			std::cout << idx2net_level[*iter]->get_name() << " ";
+		}
+		std::cout << "\n" << std::endl;
+	}
 }
  
 
