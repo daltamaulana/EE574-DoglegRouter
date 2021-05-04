@@ -221,7 +221,7 @@ class ZChannelRouter {
 			// Terminals before sorting
 			std::cout << "Top terminals before sorting: \t";
 			for (auto term:top_terms) {
-				std::cout << term->col() << "\t";
+				std::cout << term->m_owner_net->get_name() << "\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -234,7 +234,7 @@ class ZChannelRouter {
 			// Terminals after sorting
 			std::cout << "Top terminals after sorting: \t";
 			for (auto term:top_terms) {
-				std::cout << term->col() << "\t";
+				std::cout << term->m_owner_net->get_name() << "\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -242,7 +242,7 @@ class ZChannelRouter {
 			// Terminals before sorting
 			std::cout << "Bottom terminals before sorting: \t";
 			for (auto term:bottom_terms) {
-				std::cout << term->col() << "\t";
+				std::cout << term->m_owner_net->get_name() << "\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -255,7 +255,7 @@ class ZChannelRouter {
 			// Terminals before sorting
 			std::cout << "Bottom terminals after sorting: \t";
 			for (auto term:bottom_terms) {
-				std::cout << term->col() << "\t";
+				std::cout << term->m_owner_net->get_name() << "\t";
 			}
 			std::cout << "\n" << std::endl;
 		}
@@ -303,8 +303,10 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				// Iterate through bottom terminal (searching terminal with same column)
 				// Found column with top and bottom terminals
 				if (bottom_iter != bottom_terms.end()) {
+					// NOTE: Print terminal name
+					std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
 					// Check whether top and bottom terminal are on the same net
-					if ((*bottom_iter)->net()->get_name() == (*top_iter)->net()->get_name()) {
+					if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
 						// Continue to next column
 						continue;
 					} else {
@@ -313,9 +315,6 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 					}
 				}
 			}
-
-			// Perfoms transitive reduction on the graph
-			m_graph->transitiveReduction();
 
 			// Print graph
 			m_graph->printGraph();
@@ -333,10 +332,14 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 
 			// Create nets vertical constraint graph
 			create_vcg();
-			// // Check graph cyclic property
-			// if ( m_graph->isCyclic() ) { 
-			// 	// You have to implement breaking multi-terminal nets ( re-construct VCG )
-			// } 
+
+			// Check graph cyclic property
+			if ( m_graph->isCyclic() ) { 
+				// You have to implement breaking multi-terminal nets ( re-construct VCG )
+				std::cout << "Graph is cyclic, reconstructing VCG!" << std::endl;
+			} else {
+				std::cout << "Graph isn't cyclic!" << std::endl;
+			}
 			
 			// // Loop through all nets
 			// while( ! is_done() ) {

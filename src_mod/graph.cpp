@@ -26,9 +26,51 @@ Graph::Graph(int V) {
 	}
 }
 
-// Method for checking cyclic dependencies in graph
+// NOTE: Method for checking cyclic dependency of a graph (Reference: CodeGeeks)
 bool Graph::isCyclic() {
-	// You have to implement here!!
+	// Declare local variable
+	bool *visited_node = new bool[this->V];
+	bool *node_stack = new bool[this->V];
+
+	// Initialize array value
+	for(int i=0; i<this->V; i++) {
+		visited_node[i] = false;
+		node_stack[i] = false;
+	}
+
+	// Check each vertices adjacency array to detect cyclic path
+	for(int i=0; i<this->V; i++) {
+		// Call function
+		if (isNodeCyclic(i, visited_node, node_stack)) {
+			return true;
+		}
+	}
+
+	// No cycle connection detected
+	return false;
+}
+
+// NOTE: Helper function for checking cyclic path
+bool Graph::isNodeCyclic(int idx, bool visited_node[], bool *node_stack) {
+	// Check whether vertex was visited or not
+	if (!visited_node[idx]) {
+		// Set current vertex as visited
+		visited_node[idx] = true;
+		node_stack[idx] = true;
+
+		// Iterate through adjacency list
+		for(auto iter = adj[idx].begin(); iter != adj[idx].end(); ++iter) {
+			if (!visited_node[*iter] && isNodeCyclic(*iter, visited_node, node_stack)) {
+				return true;
+			} else if (node_stack[*iter]) {
+				return true;
+			}
+		}
+	}
+
+	// Remove vertex from node stack
+	node_stack[idx] = false;
+	return false;
 }
 
 // Method for setting net level to 0 (route immediately)
@@ -53,7 +95,12 @@ void Graph::increase_adj_level(ZNet* n) {
 	int i = create_or_get_net2int_mapping(n);
 	// Reduce child net level
 	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
-		levels[*j]++;
+		// Increase child level if the level difference between parent and child is less than 2
+		if ((levels[*j] - levels[i]) < 2) {
+			levels[*j]++;
+		}
+		// Call increase_adj_level method recursively for each vertex in adjacency list
+		increase_adj_level(idx2net_level[*j]);
 	}
 }
 
@@ -92,14 +139,16 @@ void Graph::addEdge(ZNet* v, ZNet* w)
 	if (levels[V] >= levels[W]) {
 		// Add net to adjacency list
 		adj[V].push_back(W); 
-		// Increase net level based on parent net
+		
+		// Increase level of child net adjacent vertices
+		increase_adj_level(w);
+
+		// Increase child net level based on parent net
 		levels[W] = levels[V] + 1; // NOTE: This part changed from levels[W]++
-		// Increase net level which connected to w net
-		for(list<int>::iterator iter = adj[W].begin(); iter!=adj[W].end(); ++iter) {
-			ZNet* neighbor_net = idx2net_level[(*iter)];
-			// Call increase_adj_level method
-			increase_adj_level(neighbor_net);
-		}
+
+	} else {
+		// Add net to adjacency list without increasing child level
+		adj[V].push_back(W);
 	}
 }
 
@@ -135,7 +184,7 @@ void Graph::transitiveReduction() {
 void Graph::printGraph() {
 	// Print graph
 	for(int i=0; i<V; i++) {
-		std::cout << "Net " << idx2net_level[i]->get_name() << "-> Level: " << levels[i] << " \tAdjacency list: ";
+		std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << " \tAdjacency list: ";
 		for(auto iter = adj[i].begin(); iter != adj[i].end(); ++iter) {
 			std::cout << idx2net_level[*iter]->get_name() << " ";
 		}

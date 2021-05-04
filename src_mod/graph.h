@@ -34,6 +34,7 @@ class Graph {
 
     // Declare methods
     bool isCyclic(); // Method for checking whether there is a cyclic connection or not
+    bool isNodeCyclic(int idx, bool visited_node[], bool *node_stack); // Helper method for checking cyclic connection
     void set_need2route(ZNet* n); // Method for setting net level to 0 (route immediately)
     void decrease_adj_level(ZNet* n); // Method for decreasing adjacency level of neighboring nets
     void increase_adj_level(ZNet* n); // NOTE: Method for increasing adjacency level of neighboring nets
