@@ -55,7 +55,7 @@ class ZTerm {
 			return m_colnum; 
 		}
 		// Getter method for terminal orientation
-		virtual unsigned int row() { 
+		virtual ZTermOrientation row() { 
 			return m_orient; 
 		}
 

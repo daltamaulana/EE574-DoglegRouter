@@ -7,6 +7,7 @@
 // User created library
 #include "objects.h"
 // Standard library
+#include <algorithm>
 #include <cassert>
 #include <string>
 #include <list>
@@ -18,6 +19,7 @@ class ZNet {
     private:
 		// Declare class attributes
 		std::string m_name; // Net name
+		std::string m_parent_net; // Parent net name (net splitting case)
 		bool is_first_term; // Flag to marks first terminal in net
 		ZTerm* m_farest_term; // Pointer to furthest terminal (rightmost)
 		ZTerm* m_closest_term; // Pointer to closest terminal (leftmost)
@@ -31,11 +33,25 @@ class ZNet {
 			m_closest_term = 0;
 			is_first_term = true;
 		}
+		ZNet (const std::string& parent_name, const std::string& child_name):m_terms_count(0),m_name(child_name),m_parent_net(parent_name) { 
+			m_farest_term = 0;
+			m_closest_term = 0;
+			is_first_term = true;
+		}
 
 		// Declare methods
 		// Getter method for net name
 		std::string get_name() { 
 			return m_name; 
+		}
+		// Getter method for parent net name
+		std::string get_parent_name() {
+			return m_parent_net;
+		}
+		// Setter method for parent net name
+		std::string set_parent_name(std::string parent_name) {
+			m_parent_net = parent_name;
+			return m_parent_net;
 		}
 		// Getter method for terminal counts
 		unsigned int terms_count() {
@@ -82,6 +98,28 @@ class ZNet {
 			if ( m_farest_term && c > m_farest_term->col()) m_farest_term = t;
 
 			return t;
+		}
+		// NOTE: Method for sorting terminals based on its column
+		void sort_net_terms() {
+			// NOTE: Debug function
+			// Terminals before sorting
+			std::cout << "Net terminals before sorting: \t";
+			for (auto term:terms) {
+				std::cout << term->m_owner_net->get_name() << "\t";
+			}
+			std::cout << "\n" << std::endl;
+
+			// Sort terminals in net
+			terms.sort([](ZTerm* terms_a, ZTerm* terms_b) {
+				return (terms_a->col() < terms_b->col());
+			});
+			// NOTE: Debug function
+			// Terminals after sorting
+			std::cout << "Net terminals after sorting: \t";
+			for (auto term:terms) {
+				std::cout << term->m_owner_net->get_name() << "\t";
+			}
+			std::cout << "\n" << std::endl;
 		}
 };
 

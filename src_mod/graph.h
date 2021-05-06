@@ -41,6 +41,7 @@ class Graph {
     std::vector<ZNet*> get_top_nets(); // Method for getting VCG top nets
     int create_or_get_net2int_mapping(ZNet* n); // Getter method for getting int index of a net
     void addEdge(ZNet* v, ZNet* w); // Method for adding edge between vertices
+    void addVertex(ZNet* v); // Method for adding vertex
     void transitiveReduction(); // NOTE: Method for performing transitive reduction on graph
     void printGraph(); // NOTE: Method for printing graph
 

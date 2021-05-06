@@ -91,16 +91,19 @@ void Graph::decrease_adj_level(ZNet* n) {
 
 // NOTE: Method for increasing adjacency level of neighboring nets
 void Graph::increase_adj_level(ZNet* n) {
-	// Get parent net index
-	int i = create_or_get_net2int_mapping(n);
-	// Reduce child net level
-	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
-		// Increase child level if the level difference between parent and child is less than 2
-		if ((levels[*j] - levels[i]) < 2) {
-			levels[*j]++;
+	if (!isCyclic()) {
+		// Get parent net index
+		int i = create_or_get_net2int_mapping(n);
+		// Reduce child net level
+		for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
+			// Increase child level if the level difference between parent and child is less than 2
+			if ((levels[*j] - levels[i]) < 2) {
+				levels[*j]++;
+			}
+
+			// Call increase_adj_level method recursively for each vertex in adjacency list
+			increase_adj_level(idx2net_level[*j]);
 		}
-		// Call increase_adj_level method recursively for each vertex in adjacency list
-		increase_adj_level(idx2net_level[*j]);
 	}
 }
 
@@ -152,6 +155,12 @@ void Graph::addEdge(ZNet* v, ZNet* w)
 	}
 }
 
+// Method for adding vertex to graph
+void Graph::addVertex(ZNet* v) {
+	// Create vertex
+	create_or_get_net2int_mapping(v);
+}
+
 // NOTE: Method for performing transitive reduction operation on the graph
 void Graph::transitiveReduction() {
 	// NOTE: Debug purpose
@@ -183,12 +192,17 @@ void Graph::transitiveReduction() {
 // NOTE: Method for getting vertices count
 void Graph::printGraph() {
 	// Print graph
-	for(int i=0; i<V; i++) {
-		std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << " \tAdjacency list: ";
-		for(auto iter = adj[i].begin(); iter != adj[i].end(); ++iter) {
-			std::cout << idx2net_level[*iter]->get_name() << " ";
+	for(int i=0; i<this->V; i++) {
+		if (!adj[i].empty()) {
+			std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << " \tAdjacency list: ";
+			for(auto iter = adj[i].begin(); iter != adj[i].end(); ++iter) {
+				std::cout << idx2net_level[*iter]->get_name() << " ";
+			}
+			std::cout << "\n" << std::endl;
 		}
-		std::cout << "\n" << std::endl;
+		else {
+			std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << std::endl;
+		}
 	}
 }
  

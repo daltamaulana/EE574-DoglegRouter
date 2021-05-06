@@ -75,6 +75,7 @@ class ZChannelRouter {
 		void terms_willbe_stored() {
 			m_terms_stored = true; 
 		}
+
 		// Method for adding net to net list
 		ZNet* get_or_add_net(ZNet* n) {
 			// Declare iterator
@@ -87,6 +88,7 @@ class ZChannelRouter {
 			// Return net	
 			return n;
 		}
+
         // Method for adding named net to netlist
 		ZNet* get_or_create_net_by_name(const std::string& name) {
 			// Declare local variable
@@ -113,6 +115,7 @@ class ZChannelRouter {
 			// Return net
 			return *i;
 		}
+
 		// Method for adding terminal to net
 		void add_term_to_net(ZNet* N, unsigned int col, ZTermOrientation o) {
             // Add terminal to net
@@ -120,6 +123,7 @@ class ZChannelRouter {
             // Store terminal to router terminal list
 			store_term(t);
         }
+
 		// Method for storing terminals to router terminal list
 		void store_terms() {
 			// Loop through nets
@@ -128,6 +132,7 @@ class ZChannelRouter {
 				store_net_terms(*i);
 			}
 		}
+
 		// Method for adding net to net list
 		void add_net_to_route(ZNet* n) {
 			// Assert net
@@ -135,6 +140,7 @@ class ZChannelRouter {
 			ZNet* m = get_or_add_net(n);
 			assert( m == n && "Confused..." );
 		}
+
 		// Virtual method for checking net conflicts
 		virtual bool has_confliscts(ZNet* n1, ZNet* n2) {
 			// Get first net closest and furthest terminal
@@ -155,6 +161,7 @@ class ZChannelRouter {
 			// Default value
 			return true;
 		}
+
 		// Method for checking whether net can be assigned on track or not
 		bool check_can_be_assigned_on_track(ZNet* n, unsigned t) {
 			// Declare iterator
@@ -177,6 +184,7 @@ class ZChannelRouter {
 			// Default return value
 			return true;
 		}
+
 		// Method for assigning net to track
 		void assign_net_to_track(ZNet* N, unsigned int t) { 
 			m_routed_num++; 
@@ -187,6 +195,7 @@ class ZChannelRouter {
 				m_max_used_track = t;
 			}
 		}
+
 		// Method for assigning net to track
 		bool try_to_assign(ZNet* net, unsigned track) {
 			if (check_can_be_assigned_on_track(net,track)) {
@@ -197,8 +206,10 @@ class ZChannelRouter {
 			// Default return value
 			return false; 
 		}
+
 		// Virtual method which implements routing process
         virtual void route_impl() = 0; 
+
 		// Method for routing nets
 		void route() {
 			std::cout << " Nets to route: " << m_nets.size() << std::endl;
@@ -215,13 +226,14 @@ class ZChannelRouter {
 			std::cout << " Missed " << m_nets.size() - m_routed_num << " nets" << std::endl;
 			m_is_done = true;
 		}
+
 		// NOTE: Method for sorting top and bottom track terminals based on its column
 		void sort_route_terms() {
 			// NOTE: Debug function
 			// Terminals before sorting
 			std::cout << "Top terminals before sorting: \t";
 			for (auto term:top_terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
+				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -234,7 +246,7 @@ class ZChannelRouter {
 			// Terminals after sorting
 			std::cout << "Top terminals after sorting: \t";
 			for (auto term:top_terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
+				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -242,7 +254,7 @@ class ZChannelRouter {
 			// Terminals before sorting
 			std::cout << "Bottom terminals before sorting: \t";
 			for (auto term:bottom_terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
+				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
 			}
 			std::cout << "\n" << std::endl;
 
@@ -255,11 +267,48 @@ class ZChannelRouter {
 			// Terminals before sorting
 			std::cout << "Bottom terminals after sorting: \t";
 			for (auto term:bottom_terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
+				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
 			}
 			std::cout << "\n" << std::endl;
 		}
-  
+
+		// NOTE: Method for splitting nets
+		void split_net(ZNet* n) {
+			// Declare local variable
+			int idx = 0;
+			int terms_count = n->terms_count();
+			std::string parent_name = n->get_name();
+			std::string child_name;
+			std::list<ZTerm*> net_terms;
+
+			// Sort terminal inside net
+			n->sort_net_terms();
+			// Get net terminals
+			net_terms = n->get_terms();
+			
+			// Declare iterator
+			std::list<ZTerm*>::iterator last_iter = net_terms.end();
+			// Set last net to second last terminal in net
+			--last_iter;
+
+			// Split net process
+			for (std::list<ZTerm*>::iterator iter = net_terms.begin(); iter != last_iter; ++iter) {
+				// Generate child name
+				child_name = std::to_string(idx);
+				// Create new child net
+				ZNet* a = new ZNet(parent_name, parent_name+child_name);
+					a->add_term((*iter)->col(), (*iter)->row());
+					a->add_term((*std::next(iter))->col(), (*std::next(iter))->row());
+				// Add new net to router net list
+				this->add_net_to_route(a);
+				// NOTE: Debug purpose
+				std::cout << "New parent net name: " << a->get_parent_name() << std::endl;
+				std::cout << "New child net name: " << a->get_name() << std::endl;
+				// Increment index
+				idx++;
+			}
+		}
+
   	private:
 		// Method for storing terminals
 		void store_term(ZTerm* t) { 
@@ -268,6 +317,7 @@ class ZChannelRouter {
 			else
 				top_terms.push_back(t);
 		}
+
 		// Method for storing net terminals
 		void store_net_terms (ZNet* n) {
 			// Get list of terminals in the net
@@ -307,12 +357,15 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 					std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
 					// Check whether top and bottom terminal are on the same net
 					if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
-						// Continue to next column
-						continue;
+						// Add vertex to graph
+						m_graph->addVertex((*top_iter)->net());
 					} else {
 						// Add new vertices and edge to graph
 						m_graph->addEdge((*top_iter)->net(), (*bottom_iter)->net());
 					}
+				} else {
+					// Add vertex to graph
+					m_graph->addVertex((*top_iter)->net());
 				}
 			}
 
@@ -333,25 +386,80 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// Create nets vertical constraint graph
 			create_vcg();
 
+			// NOTE: Print nets
+			std::cout << "Initial net list: ";
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				std::cout << (*iter)->get_name() << "\t";
+			}
+
 			// Check graph cyclic property
-			if ( m_graph->isCyclic() ) { 
+			if (m_graph->isCyclic()) { 
 				// You have to implement breaking multi-terminal nets ( re-construct VCG )
 				std::cout << "Graph is cyclic, reconstructing VCG!" << std::endl;
+				// Iterate through net list
+				for(auto iter = m_nets.begin(); iter != m_nets.end();) {
+					// Check number of terminals in net
+					if ((*iter)->terms_count() > 2) {
+						// Split net
+						split_net(*iter);
+						// Remove all terminals related to parent net
+						auto top_iter = std::remove_if(top_terms.begin(), top_terms.end(), [iter](ZTerm* term) {
+							return (*iter) == term->net();
+						});
+						top_terms.erase(top_iter, top_terms.end());
+						auto bottom_iter = std::remove_if(bottom_terms.begin(), bottom_terms.end(), [iter](ZTerm* term) {
+							return (*iter) == term->net();
+						});
+						bottom_terms.erase(bottom_iter, bottom_terms.end());
+						// Remove parent net from net list
+						iter = m_nets.erase(iter);
+					} else {
+						// Next element
+						++iter;
+					}
+				}
 			} else {
 				std::cout << "Graph isn't cyclic!" << std::endl;
 			}
+
+			// Clear terminals
+			top_terms.clear();
+			bottom_terms.clear();
+
+			// Reassign terminal
+			store_terms();
+
+			// NOTE: Print nets
+			std::cout << "Final Net list: ";
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				std::cout << (*iter)->get_name() << "\t";
+			}
+
+			// Create nets vertical constraint graph
+			create_vcg();
 			
 			// // Loop through all nets
-			// while( ! is_done() ) {
+			// while(!is_done()) {
 			// 	std::vector<ZNet*> nets = m_graph->get_top_nets(); //  get left vertices on VCG
 			// 	std::cout << "********************************** have " << nets.size() << " TOP nets to route" << std::endl;
 
 			// 	// you must sort 'nets' by increasing order of position (from left)
+			// 	// NOTE: Test sorting
+			// 	sort_route_terms();
 
-			// 	if( ! nets.size() ) break;
+			// 	if (!nets.size()) {
+			// 		break;
+			// 	} else {
+			// 		// // assign nets on current track
+			// 		// // Iterate throughh top nets
+			// 		// for (auto iter = nets.begin(); iter != nets.end(); ++iter) {
+			// 		// 	if (try_to_assign((*iter), c_track)) {
+							
+			// 		// 	}
+			// 		// }
+			// 	}
 
-			// 	// assign nets on current track
-
+			// 	// Increase track level
 			// 	c_track++;
 			// }
 		}
