@@ -229,47 +229,89 @@ class ZChannelRouter {
 
 		// NOTE: Method for sorting top and bottom track terminals based on its column
 		void sort_route_terms() {
-			// NOTE: Debug function
-			// Terminals before sorting
-			std::cout << "Top terminals before sorting: \t";
-			for (auto term:top_terms) {
-				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Top terminals before sorting: \t";
+			// for (auto term:top_terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
+			// }
+			// std::cout << "\n" << std::endl;
 
 			// Sort top terminals
 			std::sort(top_terms.begin(), top_terms.end(), [](ZTerm* terms_a, ZTerm* terms_b) {
 				return (terms_a->col() < terms_b->col());
 			});
 
-			// NOTE: Debug function
-			// Terminals after sorting
-			std::cout << "Top terminals after sorting: \t";
-			for (auto term:top_terms) {
-				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals after sorting
+			// std::cout << "Top terminals after sorting: \t";
+			// for (auto term:top_terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
+			// }
+			// std::cout << "\n" << std::endl;
 
-			// NOTE: Debug function
-			// Terminals before sorting
-			std::cout << "Bottom terminals before sorting: \t";
-			for (auto term:bottom_terms) {
-				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Bottom terminals before sorting: \t";
+			// for (auto term:bottom_terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
+			// }
+			// std::cout << "\n" << std::endl;
 
 			// Sort bottom terminals
 			std::sort(bottom_terms.begin(), bottom_terms.end(), [](ZTerm* terms_a, ZTerm* terms_b) {
 				return (terms_a->col() < terms_b->col());
 			});
 
-			// NOTE: Debug function
-			// Terminals before sorting
-			std::cout << "Bottom terminals after sorting: \t";
-			for (auto term:bottom_terms) {
-				std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Bottom terminals after sorting: \t";
+			// for (auto term:bottom_terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "(" << term->col() <<")\t";
+			// }
+			// std::cout << "\n" << std::endl;
+		}
+
+		void sort_route_nets() {
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Nets before sorting: \t";
+			// for (auto net:m_nets) {
+			// 	std::cout << net->get_name() << "(" << net->get_closest_term()->col() <<")(" << net->get_closest_term()->row() << ")\t";
+			// }
+			// std::cout << "\n" << std::endl;
+
+			// Sort terminals in net
+			m_nets.sort([](ZNet* net_a, ZNet* net_b) {
+				// Declare temp variables
+				auto a_closest_term = net_a->get_closest_term();
+				auto b_closest_term = net_b->get_closest_term();
+				auto a_orientation = a_closest_term->row();
+				auto b_orientation = b_closest_term->row();
+
+				// Sort criteria
+				if (a_closest_term->col() < b_closest_term->col()) {
+					return true;
+				} else if (a_closest_term->col() > b_closest_term->col()) {
+					return false;
+				} else {
+					if ((a_orientation == ZUpperTerm) && (b_orientation == ZLowerTerm)) {
+						return true;
+					} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+			});
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Nets after sorting: \t";
+			// for (auto net:m_nets) {
+			// 	std::cout << net->get_name() << "(" << net->get_closest_term()->col() <<")(" << net->get_closest_term()->row() << ")\t";
+			// }
+			// std::cout << "\n" << std::endl;
+
 		}
 
 		// NOTE: Method for splitting nets
@@ -353,8 +395,8 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				// Iterate through bottom terminal (searching terminal with same column)
 				// Found column with top and bottom terminals
 				if (bottom_iter != bottom_terms.end()) {
-					// NOTE: Print terminal name
-					std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
+					// // NOTE: Print terminal name
+					// std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
 					// Check whether top and bottom terminal are on the same net
 					if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
 						// Add vertex to graph
@@ -369,7 +411,7 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				}
 			}
 
-			// Print graph
+			// NOTE: Print VCG
 			m_graph->printGraph();
 		}
 
@@ -386,11 +428,11 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// Create nets vertical constraint graph
 			create_vcg();
 
-			// NOTE: Print nets
-			std::cout << "Initial net list: ";
-			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-				std::cout << (*iter)->get_name() << "\t";
-			}
+			// // NOTE: Print nets
+			// std::cout << "Initial net list: ";
+			// for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+			// 	std::cout << (*iter)->get_name() << "\t";
+			// }
 
 			// Check graph cyclic property
 			if (m_graph->isCyclic()) { 
@@ -429,39 +471,63 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// Reassign terminal
 			store_terms();
 
-			// NOTE: Print nets
-			std::cout << "Final Net list: ";
-			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-				std::cout << (*iter)->get_name() << "\t";
+			// // NOTE: Print nets
+			// std::cout << "Final Net list: ";
+			// for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+			// 	std::cout << (*iter)->get_name() << "\t";
+			// }
+
+			// NOTE: Test sorting
+			sort_route_terms();
+
+			// // Create nets vertical constraint graph
+			// create_vcg();
+
+			// Sort nets
+			sort_route_nets();
+			
+			// Loop through all nets
+			while(!is_done()) {
+				std::vector<ZNet*> nets = m_graph->get_top_nets(); //  get left vertices on VCG
+				std::cout << "************************************************************************" << std::endl;
+				std::cout << "*             Routing info: router have " << nets.size() << " TOP nets to route            *" << std::endl;
+				std::cout << "************************************************************************" << std::endl;
+
+				// you must sort 'nets' by increasing order of position (from left)
+				// NOTE: Test sorting
+				sort_route_terms();
+
+				if (!nets.size()) {
+					break;
+				} else {
+					// assign nets on current track
+					// Iterate throughh top nets
+					for (auto iter = nets.begin(); iter != nets.end(); ++iter) {
+						if (try_to_assign((*iter), c_track)) {
+							std::cout << "Routing net: " << (*iter)->get_name() << std::endl;
+							m_graph->printGraph();
+							m_graph->transposeGraph();
+							m_graph->printTransposedGraph();
+							m_graph->decrease_adj_level(*iter);
+							m_graph->removeVertex(*iter);
+						} else {
+							std::cout << "Routing net: " << (*iter)->get_name() << std::endl;
+							std::cout << "Need to set net " << (*iter)->get_name() << " to route" << std::endl;
+							m_graph->set_need2route(*iter);
+						}
+					}
+					// Increase track level
+					c_track++;
+				}
+
+				// NOTE: Print graph
+				m_graph->printGraph();
 			}
 
-			// Create nets vertical constraint graph
-			create_vcg();
-			
-			// // Loop through all nets
-			// while(!is_done()) {
-			// 	std::vector<ZNet*> nets = m_graph->get_top_nets(); //  get left vertices on VCG
-			// 	std::cout << "********************************** have " << nets.size() << " TOP nets to route" << std::endl;
-
-			// 	// you must sort 'nets' by increasing order of position (from left)
-			// 	// NOTE: Test sorting
-			// 	sort_route_terms();
-
-			// 	if (!nets.size()) {
-			// 		break;
-			// 	} else {
-			// 		// // assign nets on current track
-			// 		// // Iterate throughh top nets
-			// 		// for (auto iter = nets.begin(); iter != nets.end(); ++iter) {
-			// 		// 	if (try_to_assign((*iter), c_track)) {
-							
-			// 		// 	}
-			// 		// }
-			// 	}
-
-			// 	// Increase track level
-			// 	c_track++;
-			// }
+			// Print tracks
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
+			}
 		}
 };
 

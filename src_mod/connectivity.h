@@ -25,6 +25,7 @@ class ZNet {
 		ZTerm* m_closest_term; // Pointer to closest terminal (leftmost)
 		std::list<ZTerm*> terms; // List of terminals in net
 		unsigned int m_terms_count; // Number of terminals in net
+		bool is_routed; // Flags for marking whether net has been routed or not
 
     public:
 		// Declare constructor
@@ -32,11 +33,13 @@ class ZNet {
 			m_farest_term = 0;
 			m_closest_term = 0;
 			is_first_term = true;
+			is_routed = false;
 		}
 		ZNet (const std::string& parent_name, const std::string& child_name):m_terms_count(0),m_name(child_name),m_parent_net(parent_name) { 
 			m_farest_term = 0;
 			m_closest_term = 0;
 			is_first_term = true;
+			is_routed = false;
 		}
 
 		// Declare methods

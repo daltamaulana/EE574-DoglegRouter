@@ -19,6 +19,7 @@ Graph::Graph(int V) {
 	this->V = V;
 	// Create new adjacency list for each vertex
 	adj = new list<int>[V];
+	trans_adj = new list<int>[V];
 	// Resize levels vector and assign with 0 value
 	levels.resize(V);
 	for(int i=0;i<V;i++)  {
@@ -64,6 +65,8 @@ bool Graph::isNodeCyclic(int idx, bool visited_node[], bool *node_stack) {
 				return true;
 			} else if (node_stack[*iter]) {
 				return true;
+			} else {
+				continue;
 			}
 		}
 	}
@@ -85,7 +88,20 @@ void Graph::decrease_adj_level(ZNet* n) {
 	int i = create_or_get_net2int_mapping(n);
 	// Reduce child net level
 	for(list<int>::iterator j = adj[i].begin(); j!=adj[i].end(); ++j) {
-		levels[*j]--;
+		// levels[*j]--;
+		// // Decrease child level if the level difference between parent and child is less than 2
+		// if ((levels[*j] - levels[i]) > 1) {
+		// 	levels[*j]--;
+		// }
+
+		if (trans_adj[*j].size() == 1) {
+			if ((levels[*j] - levels[i]) > 0) {
+				levels[*j]--;
+			}
+		}
+
+		// Call increase_adj_level method recursively for each vertex in adjacency list
+		decrease_adj_level(idx2net_level[*j]);
 	}
 }
 
@@ -161,6 +177,15 @@ void Graph::addVertex(ZNet* v) {
 	create_or_get_net2int_mapping(v);
 }
 
+// Method for removing vertex from graph
+void Graph::removeVertex(ZNet* v) {
+	// Create vertex
+	int V = create_or_get_net2int_mapping(v);
+
+	// Clear adjacency list
+	adj[V].clear();
+}
+
 // NOTE: Method for performing transitive reduction operation on the graph
 void Graph::transitiveReduction() {
 	// NOTE: Debug purpose
@@ -192,7 +217,10 @@ void Graph::transitiveReduction() {
 // NOTE: Method for getting vertices count
 void Graph::printGraph() {
 	// Print graph
-	for(int i=0; i<this->V; i++) {
+	std::cout << "************************************************************************" << std::endl;
+	std::cout << "*                     Vertical Constraint Graph                        *" << std::endl;
+	std::cout << "************************************************************************" << std::endl;
+	for(int i=0; i<V; i++) {
 		if (!adj[i].empty()) {
 			std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << " \tAdjacency list: ";
 			for(auto iter = adj[i].begin(); iter != adj[i].end(); ++iter) {
@@ -205,5 +233,40 @@ void Graph::printGraph() {
 		}
 	}
 }
- 
+
+// NOTE: Method for getting vertices count
+void Graph::printTransposedGraph() {
+	// Print graph
+	std::cout << "************************************************************************" << std::endl;
+	std::cout << "*                         Transposed Graph                             *" << std::endl;
+	std::cout << "************************************************************************" << std::endl;
+	for(int i=0; i<V; i++) {
+		if (!trans_adj[i].empty()) {
+			std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << " \tAdjacency list: ";
+			for(auto iter = trans_adj[i].begin(); iter != trans_adj[i].end(); ++iter) {
+				std::cout << idx2net_level[*iter]->get_name() << " ";
+			}
+			std::cout << "\n" << std::endl;
+		}
+		else {
+			std::cout << "Net " << idx2net_level[i]->get_name() << " -> Level: " << levels[i] << std::endl;
+		}
+	}
+}
+
+// NOTE: Method for transposing graph
+void Graph::transposeGraph() {
+	// Clear transposed adjacency matrix
+	for(int i=0; i<V; i++) {
+		trans_adj[i].clear();
+	}
+	
+	// Iterate through adjacency list
+	for(int i=0; i<V; i++) {
+		for(auto iter=adj[i].begin(); iter!=adj[i].end(); ++iter) {
+			// Add edge to transposed adjacency list
+			trans_adj[*iter].push_back(i);
+		}
+	}
+}
 

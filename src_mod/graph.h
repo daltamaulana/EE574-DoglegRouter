@@ -22,11 +22,11 @@ class Graph {
   // Declare attributes
   int n;
   int V; // Number of graph vertices
-  list<int> *adj; // Pointer to list of adjacency array
+  list<int> *adj; // Pointer to list of adjacency list
+  list<int> *trans_adj; // Pointer to list of transposed adjacency list
   vector<int> levels; // Level of each graph vertex
   map<ZNet*,int> level_net2idx; // Variable for mapping net to index
   map<int,ZNet*> idx2net_level; // Variable for mapping index to net
-  //bool isCyclicUtil(int v, bool visited[], bool *rs);  // used by isCyclic()
 
   public:
     // Declare constructor
@@ -42,8 +42,11 @@ class Graph {
     int create_or_get_net2int_mapping(ZNet* n); // Getter method for getting int index of a net
     void addEdge(ZNet* v, ZNet* w); // Method for adding edge between vertices
     void addVertex(ZNet* v); // Method for adding vertex
+    void removeVertex(ZNet* v); // Method for removing vertex
     void transitiveReduction(); // NOTE: Method for performing transitive reduction on graph
     void printGraph(); // NOTE: Method for printing graph
+    void printTransposedGraph(); //NOTE: Method for printing transposed graph
+    void transposeGraph(); // NOTE: Method for transposing graph
 
 };
 
