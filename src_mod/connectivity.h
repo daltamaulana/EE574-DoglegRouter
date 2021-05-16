@@ -76,12 +76,7 @@ class ZNet {
 		}
 		// Method for creating new terminal in nets
 		ZTerm* add_term(unsigned int c, ZTermOrientation o, const char* n = "?") {
-			//std::cout << "Nearest:" << m_closest_term<< " Farest:" << m_farest_term << std::endl;
-
 			ZTerm* t = new ZTerm(c,o,this,n);
-			//terms.push_back(t);
-			//m_terms_count++;
-
 			return add_term_base(t);
 		}
 		// Method for adding terminal to net
@@ -102,27 +97,27 @@ class ZNet {
 
 			return t;
 		}
-		// NOTE: Method for sorting terminals based on its column
+		// Method for sorting terminals based on its column
 		void sort_net_terms() {
-			// NOTE: Debug function
-			// Terminals before sorting
-			std::cout << "Net terminals before sorting: \t";
-			for (auto term:terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals before sorting
+			// std::cout << "Net terminals before sorting: \t";
+			// for (auto term:terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "\t";
+			// }
+			// std::cout << "\n" << std::endl;
 
 			// Sort terminals in net
 			terms.sort([](ZTerm* terms_a, ZTerm* terms_b) {
 				return (terms_a->col() < terms_b->col());
 			});
-			// NOTE: Debug function
-			// Terminals after sorting
-			std::cout << "Net terminals after sorting: \t";
-			for (auto term:terms) {
-				std::cout << term->m_owner_net->get_name() << "\t";
-			}
-			std::cout << "\n" << std::endl;
+			// // NOTE: Debug function
+			// // Terminals after sorting
+			// std::cout << "Net terminals after sorting: \t";
+			// for (auto term:terms) {
+			// 	std::cout << term->m_owner_net->get_name() << "\t";
+			// }
+			// std::cout << "\n" << std::endl;
 		}
 };
 

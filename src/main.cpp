@@ -1,17 +1,25 @@
+//////////////////////////////////////////////////////////////////////////////////////
+//                               Import Library                                     //
+//////////////////////////////////////////////////////////////////////////////////////
+// User created library
 #include "router.h"
-
 #include "example.h"
 
-int main( int argc, char* args[] )
-{
-	
+//////////////////////////////////////////////////////////////////////////////////////
+//                               Main Function                                      //
+//////////////////////////////////////////////////////////////////////////////////////
+int main( int argc, char* args[] ) {
+	// Declare new router object
 	ZChannelRouter* router = new ZLeftEdgeChannelRouter;
-    example(router);
+    
+	// Add terminals to router object
+	example(router);
 	
-	//routing 	
+	// Routing process 	
 	router->route();
     
-	// Please print your output (routing result) with the format as mentioned in README
-        
+	// Print routing result
+    
+	// Return value
 	return 0;
 }

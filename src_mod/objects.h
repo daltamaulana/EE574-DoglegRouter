@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 const int CHANNEL_MAX=30; // Maximum number of tracks (including top and bottom term)
 enum ZTermType { ZInputTerm, ZOutputTerm }; // Terminal type
-enum ZTermOrientation { ZLowerTerm = CHANNEL_MAX, ZUpperTerm = 0  }; // Term position
+enum ZTermOrientation { ZLowerTerm = 0, ZUpperTerm = CHANNEL_MAX  }; // Term position
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                       Declare Class and Its Attributes                           //
@@ -68,7 +68,6 @@ class ZTerm {
 		}
 		// Setter method for terminal name
 		void set_name(const std::string& s) { 
-			// std::cout << " ZTERM: " << m_name << " -> " << s << std::endl;
 			m_name = s;
 		}
 };

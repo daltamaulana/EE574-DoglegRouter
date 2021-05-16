@@ -1,39 +1,51 @@
 #ifndef graph_h
 #define graph_h
 
-#include <iostream>
+//////////////////////////////////////////////////////////////////////////////////////
+//                               Import Library                                     //
+//////////////////////////////////////////////////////////////////////////////////////
+// User created library
+#include "connectivity.h"
+// Standard library
+#include <map> 
 #include <list>
 #include <vector>
 #include <limits.h>
-#include <map> 
+#include <iostream>
 
 using namespace std;
 
-class ZNet;
+//////////////////////////////////////////////////////////////////////////////////////
+//                       Declare Class and Its Attributes                           //
+//////////////////////////////////////////////////////////////////////////////////////
+class Graph {
+  // Declare attributes
+  int n;
+  int V; // Number of graph vertices
+  list<int> *adj; // Pointer to list of adjacency list
+  list<int> *trans_adj; // Pointer to list of transposed adjacency list
+  vector<int> levels; // Level of each graph vertex
+  map<ZNet*,int> level_net2idx; // Variable for mapping net to index
+  map<int,ZNet*> idx2net_level; // Variable for mapping index to net
 
-class Graph
-{
-    int n;
-    int V;    // # vertices
-    list<int> *adj;    // Pointer to an array containing adjacency lists
-    
-    vector<int> levels; // assign level for each vertex
-    //bool isCyclicUtil(int v, bool visited[], bool *rs);  // used by isCyclic()
-    map<ZNet*,int> level_net2idx;
-    map<int,ZNet*> idx2net_level;
-    
-    
-public:
-  
-    void decrease_adj_level(ZNet* n);
-    void set_need2route(ZNet* n);
-  //void dump();
-    int create_or_get_net2int_mapping(ZNet* n);
-    std::vector<ZNet*> get_top_nets();
+  public:
+    // Declare constructor
+    Graph(int V);
 
-    Graph(int V);   // Constructor
-    void addEdge(ZNet* v, ZNet* w);   // to add an edge to graph
-    bool isCyclic();    // returns true if there is a cycle in this graph
+    // Declare methods
+    bool isCyclic(); // Method for checking whether there is a cyclic connection or not
+    bool isNodeCyclic(int idx, bool visited_node[], bool *node_stack); // Helper method for checking cyclic connection
+    void set_need2route(ZNet* n); // Method for setting net level to 0 (route immediately)
+    void decrease_adj_level(ZNet* n); // Method for decreasing adjacency level of neighboring nets
+    void increase_adj_level(ZNet* n); // NOTE: Method for increasing adjacency level of neighboring nets
+    std::vector<ZNet*> get_top_nets(); // Method for getting VCG top nets
+    int create_or_get_net2int_mapping(ZNet* n); // Getter method for getting int index of a net
+    void addEdge(ZNet* v, ZNet* w); // Method for adding edge between vertices
+    void addVertex(ZNet* v); // Method for adding vertex
+    void removeVertex(ZNet* v); // Method for removing vertex
+    void transposeGraph(); // NOTE: Method for transposing graph
+    void printGraph(); // NOTE: Method for printing graph
+    void printTransposedGraph(); //NOTE: Method for printing transposed graph
 };
 
 #endif

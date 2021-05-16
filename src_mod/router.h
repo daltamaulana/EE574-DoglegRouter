@@ -33,6 +33,7 @@ class ZChannelRouter {
 		std::list<ZNet*> m_nets; // List of nets
 		std::vector<ZTerm*> top_terms; // Vector for storing top terminals
 		std::vector<ZTerm*> bottom_terms; // Vector for storing bottom terminals
+		std::vector<int> m_nets_in_col; // Vector for storing number of nets in each columns
 		std::map<ZNet*,unsigned int> m_net2track; // Store net to track map
 		std::map<unsigned int,std::vector<ZNet*> > m_track2nets; // Store track to net map
 
@@ -378,6 +379,50 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 		Graph* m_graph; // Vertical constraint graph
 
 		// Declare method
+		// Method for creating zone representation (horizontal constraint graph)
+		void create_zone_repr(){
+			// Declare local variable
+			int max_col = 0;
+			int max_nets = 0;
+			int closest_col = 0;
+			int furthest_col = 0;
+
+			// Get max number of column in channel
+			if (top_terms.back()->col() >= bottom_terms.back()->col()) {
+				max_col = top_terms.back()->col();
+			} else {
+				max_col = bottom_terms.back()->col();
+			}
+
+			// Initialize m_nets_in_col vector
+			m_nets_in_col.resize(max_col+1);
+			for(int i=0;i<max_col+1;i++)  {
+				m_nets_in_col[i] = 0;  		
+			}
+
+			// Iterate through all nets in channel
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				closest_col = (*iter)->get_closest_term()->col();
+				furthest_col = (*iter)->get_farest_term()->col();
+				std::cout << "Max col: " << max_col << "\tClosest col: " << closest_col << "\tFurthest col: " << furthest_col << std::endl;
+				// Update m_nets_in_col value
+				for(int i=closest_col; i<=furthest_col; i++) {
+					m_nets_in_col[i] += 1;
+				}
+			}
+
+			// Print value
+			for(int i=0; i<max_col+1; i++) {
+				std::cout << "Column: " << i << "\tMax nets: " << m_nets_in_col[i] << std::endl;
+			}
+
+			// Get maximum number of nets in column
+			max_nets = *std::max_element(m_nets_in_col.begin(), m_nets_in_col.end());
+			
+			// Update maxtracks value
+			set_maxtracks(max_nets);
+		}
+
 		// Method for creating vertical constraint graph
 		void create_vcg() {
 			// Declare new graph object
@@ -395,8 +440,9 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				// Iterate through bottom terminal (searching terminal with same column)
 				// Found column with top and bottom terminals
 				if (bottom_iter != bottom_terms.end()) {
-					// // NOTE: Print terminal name
-					// std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
+					// NOTE: Print terminal name
+					std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
+					
 					// Check whether top and bottom terminal are on the same net
 					if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
 						// Add vertex to graph
@@ -425,14 +471,14 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// NOTE: Test sorting
 			sort_route_terms();
 
+			// Sort nets
+			sort_route_nets();
+
+			// Create zone representation
+			create_zone_repr();
+
 			// Create nets vertical constraint graph
 			create_vcg();
-
-			// // NOTE: Print nets
-			// std::cout << "Initial net list: ";
-			// for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-			// 	std::cout << (*iter)->get_name() << "\t";
-			// }
 
 			// Check graph cyclic property
 			if (m_graph->isCyclic()) { 
@@ -471,20 +517,24 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// Reassign terminal
 			store_terms();
 
-			// // NOTE: Print nets
-			// std::cout << "Final Net list: ";
-			// for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-			// 	std::cout << (*iter)->get_name() << "\t";
-			// }
-
 			// NOTE: Test sorting
 			sort_route_terms();
 
-			// // Create nets vertical constraint graph
-			// create_vcg();
-
 			// Sort nets
 			sort_route_nets();
+
+			// Create zone representation
+			create_zone_repr();
+
+			// Create nets vertical constraint graph
+			create_vcg();
+
+			// NOTE: Print nets
+			std::cout << "Final Net list: ";
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				std::cout << (*iter)->get_name() << "\t";
+			}
+			std::cout << "\n";
 			
 			// Loop through all nets
 			while(!is_done()) {
@@ -494,9 +544,6 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				std::cout << "************************************************************************" << std::endl;
 
 				// you must sort 'nets' by increasing order of position (from left)
-				// NOTE: Test sorting
-				sort_route_terms();
-
 				if (!nets.size()) {
 					break;
 				} else {
@@ -524,9 +571,16 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 				m_graph->printGraph();
 			}
 
+			// Print max number of tracks
+			std::cout << "Max number of tracks: " << get_maxtracks() << std::endl;
+
 			// Print tracks
 			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-				std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
+				if ((*iter)->get_parent_name().empty()) {
+					std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
+				} else {
+					std::cout << "Net name: " << (*iter)->get_parent_name() << " Track: " << get_net_track(*iter) << std::endl;
+				}
 			}
 		}
 };

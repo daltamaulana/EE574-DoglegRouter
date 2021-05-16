@@ -5,7 +5,7 @@
 //                               Import Library                                     //
 //////////////////////////////////////////////////////////////////////////////////////
 // User created library
-#include "connectivity.h" //NOTE: Add connectivity.h and remove ZNet class primitives
+#include "connectivity.h"
 // Standard library
 #include <map> 
 #include <list>
