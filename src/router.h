@@ -16,6 +16,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                       Declare Class and Its Attributes                           //
@@ -254,12 +255,29 @@ class ZChannelRouter {
 					return false;
 				} else {
 					if ((a_orientation == ZUpperTerm) && (b_orientation == ZLowerTerm)) {
-						return true;
-					} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
 						return false;
+					} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
+						return true;
 					} else {
 						return true;
 					}
+				}
+			});
+		}
+
+		// NOTE: Method for sorting net by name
+		void sort_route_by_name() {
+			// Sort terminals in net
+			m_nets.sort([](ZNet* net_a, ZNet* net_b) {
+				// Declare temp variables
+				auto a_name = net_a->get_name();
+				auto b_name = net_b->get_name();
+
+				// Sort criteria
+				if (a_name < b_name) {
+					return true;
+				} else {
+					return false;
 				}
 			});
 		}
@@ -296,6 +314,71 @@ class ZChannelRouter {
 				// Increment index
 				idx++;
 			}
+		}
+
+		// NOTE: Method for printing track list
+		void print_result() {
+			// Declare local variable
+			int vias = 0;
+			int dogleg = 0;
+			fstream result_file;
+			std::string file_name;
+			std::string net_name;
+			std::string parent_name;
+			std::string temp_parent_name;
+
+			// Loop through all nets to get proper filename
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				if ((*iter)->get_parent_name().empty()) {
+					net_name.append((*iter)->get_name());
+					vias += (*iter)->terms_count(); 
+				} else {
+					if (parent_name.empty()) {
+						parent_name = (*iter)->get_parent_name();
+						net_name.append((*iter)->get_parent_name());
+						vias += (*iter)->terms_count();
+						dogleg += 1;
+					} else {
+						if (parent_name == (*iter)->get_parent_name()) {
+							vias += (*iter)->terms_count();
+						} else {
+							parent_name = (*iter)->get_parent_name();
+							net_name.append((*iter)->get_parent_name());
+							vias += (*iter)->terms_count();
+							dogleg += 1;
+						}
+					}
+				}
+			}
+
+			// Create filename
+			file_name = "./results/routing_" + net_name + "_" + std::to_string(get_maxtracks()) + "_" 
+						+ std::to_string(vias) + "_" + std::to_string(dogleg) + ".txt";
+
+			// Open file
+			result_file.open(file_name, ios::out | ios::binary);
+
+			// Print tracks
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				if ((*iter)->get_parent_name().empty()) {
+					result_file << (*iter)->get_name() << " " << get_net_track(*iter) << std::endl;
+				} else {
+					if (temp_parent_name.empty()) {
+						temp_parent_name = (*iter)->get_parent_name();
+						result_file << temp_parent_name << " " << get_net_track(*iter);
+					} else {
+						if (temp_parent_name == (*iter)->get_parent_name()) {
+							result_file << " " << get_net_track(*iter) << std::endl;
+						} else {
+							temp_parent_name = (*iter)->get_parent_name();
+							result_file << "\n" << temp_parent_name << " " << get_net_track(*iter);
+						}
+					}
+				}
+			}
+
+			// Close file
+			result_file.close();
 		}
 
   	private:
@@ -342,7 +425,7 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 
 			// Initialize m_nets_in_col vector
 			m_nets_in_col.resize(max_col+1);
-			for(int i=0;i<max_col;i++)  {
+			for(int i=0;i<max_col+1;i++)  {
 				m_nets_in_col[i] = 0;  		
 			}
 
@@ -365,36 +448,36 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 		}
 
 		// Method for creating vertical constraint graph
-void create_vcg() {
-	// Declare new graph object
-	m_graph = new Graph(get_nets().size());
-	
-	// Declare iterator for top terminal
-	std::vector<ZTerm*>::iterator top_iter;
+		void create_vcg() {
+			// Declare new graph object
+			m_graph = new Graph(get_nets().size());
+			
+			// Declare iterator for top terminal
+			std::vector<ZTerm*>::iterator bottom_iter;
 
-	// Iterate through top terminal
-	for(top_iter=top_terms.begin(); top_iter != top_terms.end(); ++top_iter) {
-		// Declare iterator for bottom terminal (Search terminal with same column)
-		auto bottom_iter = std::find_if(bottom_terms.begin(), bottom_terms.end(), [top_iter](ZTerm* term) {
-			return (*top_iter)->col() == term->col();
-		});
-		// Iterate through bottom terminal (searching terminal with same column)
-		// Found column with top and bottom terminals
-		if (bottom_iter != bottom_terms.end()) {
-			// Check whether top and bottom terminal are on the same net
-			if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
-				// Add vertex to graph
-				m_graph->addVertex((*top_iter)->net());
-			} else {
-				// Add new vertices and edge to graph
-				m_graph->addEdge((*top_iter)->net(), (*bottom_iter)->net());
+			// Iterate through bottom terminal
+			for(bottom_iter=bottom_terms.begin(); bottom_iter != bottom_terms.end(); ++bottom_iter) {
+				// Declare iterator for bottom terminal (Search terminal with same column)
+				auto top_iter = std::find_if(top_terms.begin(), top_terms.end(), [bottom_iter](ZTerm* term) {
+					return (*bottom_iter)->col() == term->col();
+				});
+				// Iterate through top terminal (searching terminal with same column)
+				// Found column with top and bottom terminals
+				if (top_iter != top_terms.end()) {
+					// Check whether top and bottom terminal are on the same net
+					if ((*top_iter)->m_owner_net->get_name() == (*bottom_iter)->m_owner_net->get_name()) {
+						// Add vertex to graph
+						m_graph->addVertex((*bottom_iter)->net());
+					} else {
+						// Add new vertices and edge to graph
+						m_graph->addEdge((*bottom_iter)->net(), (*top_iter)->net());
+					}
+				} else {
+					// Add vertex to graph
+					m_graph->addVertex((*bottom_iter)->net());
+				}
 			}
-		} else {
-			// Add vertex to graph
-			m_graph->addVertex((*top_iter)->net());
 		}
-	}
-}
 
     public:
 		// Declare method
@@ -403,10 +486,10 @@ void create_vcg() {
 			// Declare local variable
 			unsigned int c_track = 1;
 
-			// Sort terminals
-			sort_route_terms();
 			// Sort nets
 			sort_route_nets();
+			// Sort terminals
+			sort_route_terms();
 			// Create zone representation (HCG)
 			create_zone_repr();
 			// Create nets vertical constraint graph (VCG)
@@ -492,13 +575,14 @@ void create_vcg() {
 				m_graph->printGraph();
 			}
 
-			// Print max number of tracks
-			std::cout << "Max number of tracks: " << get_maxtracks() << std::endl;
+			// Update maxtracks value
+			set_maxtracks(m_max_used_track);
 
-			// Print tracks
-			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-				std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
-			}
+			// Sort route by name (printing purpose)
+			sort_route_by_name();
+
+			// // Print result
+			// print_result();
 		}
 };
 
