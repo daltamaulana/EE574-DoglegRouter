@@ -25,5 +25,6 @@ default:
 	#cd ./src
 	clear
 	rm -f ./bin/$(OUT) 
-#	g++  -DOS_WINDOWS $(SRCS) -o ./bin/$(OUT) -I ./deps/win/SDL2/include -L ./deps/win/SDL2/lib/win32  -lmingw32 -lSDl2 -static-libgcc -static-libstdc++
-	g++ -Wfatal-errors -g $(SRCS) $(FLAGS) $(INCLS) $(LIBS) -o ./bin/$(OUT)
+    # g++  -DOS_WINDOWS $(SRCS) -o ./bin/$(OUT) -I ./deps/win/SDL2/include -L ./deps/win/SDL2/lib/win32  -lmingw32 -lSDl2 -static-libgcc -static-libstdc++
+	# g++ -Wfatal-errors -g $(SRCS) $(FLAGS) $(INCLS) $(LIBS) -o ./bin/$(OUT)
+	g++ -std=c++0x -Wfatal-errors -g $(SRCS) -o ./bin/$(OUT)

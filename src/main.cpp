@@ -15,8 +15,7 @@ int main( int argc, char* args[] ) {
 	// Open example file
 	string fileName = string(args[1]);
 	// Add terminals to router object
-	example(router);
-	// example(router, fileName);
+	example(router, fileName);
 	
 	// Routing process 	
 	router->route();
