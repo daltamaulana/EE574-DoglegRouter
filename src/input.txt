@@ -1,5 +1,0 @@
-A 0 U
-A 2 L
-B 0 L
-B 1 U
-B 2 U

@@ -297,13 +297,28 @@ class ZChannelRouter {
 					return false;
 				} else {
 					if ((a_orientation == ZUpperTerm) && (b_orientation == ZLowerTerm)) {
-						return true;
-					} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
 						return false;
+					} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
+						return true;
 					} else {
 						return true;
 					}
 				}
+
+				// // Sort criteria
+				// if (a_closest_term->col() < b_closest_term->col()) {
+				// 	return true;
+				// } else if (a_closest_term->col() > b_closest_term->col()) {
+				// 	return false;
+				// } else {
+				// 	if ((a_orientation == ZUpperTerm) && (b_orientation == ZLowerTerm)) {
+				// 		return true;
+				// 	} else if ((a_orientation == ZLowerTerm) && (b_orientation == ZUpperTerm)) {
+				// 		return false;
+				// 	} else {
+				// 		return true;
+				// 	}
+				// }
 			});
 			// // NOTE: Debug function
 			// // Terminals before sorting
@@ -313,6 +328,22 @@ class ZChannelRouter {
 			// }
 			// std::cout << "\n" << std::endl;
 
+		}
+
+		void sort_route_by_name() {
+			// Sort terminals in net
+			m_nets.sort([](ZNet* net_a, ZNet* net_b) {
+				// Declare temp variables
+				auto a_name = net_a->get_name();
+				auto b_name = net_b->get_name();
+
+				// Sort criteria
+				if (a_name < b_name) {
+					return true;
+				} else {
+					return false;
+				}
+			});
 		}
 
 		// NOTE: Method for splitting nets
@@ -349,6 +380,31 @@ class ZChannelRouter {
 				std::cout << "New child net name: " << a->get_name() << std::endl;
 				// Increment index
 				idx++;
+			}
+		}
+
+		// NOTE: Method for printing track list
+		void print_result() {
+			// Declare local variable
+			std::string parent_name;
+
+			// Print tracks
+			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
+				if ((*iter)->get_parent_name().empty()) {
+					std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
+				} else {
+					if (parent_name.empty()) {
+						parent_name = (*iter)->get_parent_name();
+						std::cout << "Net name: " << parent_name << " Track: " << get_net_track(*iter);
+					} else {
+						if (parent_name == (*iter)->get_parent_name()) {
+							std::cout << " " << get_net_track(*iter) << std::endl;
+						} else {
+							parent_name = (*iter)->get_parent_name();
+							std::cout << "\nNet name: " << parent_name << " Track: " << get_net_track(*iter);
+						}
+					}
+				}
 			}
 		}
 
@@ -427,35 +483,64 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 		void create_vcg() {
 			// Declare new graph object
 			m_graph = new Graph(get_nets().size());
-			
-			// Declare iterator for top terminal
-			std::vector<ZTerm*>::iterator top_iter;
 
-			// Iterate through top terminal
-			for(top_iter=top_terms.begin(); top_iter != top_terms.end(); ++top_iter) {
+			// Declare iterator for top terminal
+			std::vector<ZTerm*>::iterator bottom_iter;
+
+			// Iterate through bottom terminal
+			for(bottom_iter=bottom_terms.begin(); bottom_iter != bottom_terms.end(); ++bottom_iter) {
 				// Declare iterator for bottom terminal (Search terminal with same column)
-				auto bottom_iter = std::find_if(bottom_terms.begin(), bottom_terms.end(), [top_iter](ZTerm* term) {
-					return (*top_iter)->col() == term->col();
+				auto top_iter = std::find_if(top_terms.begin(), top_terms.end(), [bottom_iter](ZTerm* term) {
+					return (*bottom_iter)->col() == term->col();
 				});
-				// Iterate through bottom terminal (searching terminal with same column)
+				// Iterate through top terminal (searching terminal with same column)
 				// Found column with top and bottom terminals
-				if (bottom_iter != bottom_terms.end()) {
+				if (top_iter != top_terms.end()) {
 					// NOTE: Print terminal name
 					std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
 					
 					// Check whether top and bottom terminal are on the same net
-					if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
+					if ((*top_iter)->m_owner_net->get_name() == (*bottom_iter)->m_owner_net->get_name()) {
 						// Add vertex to graph
-						m_graph->addVertex((*top_iter)->net());
+						m_graph->addVertex((*bottom_iter)->net());
 					} else {
 						// Add new vertices and edge to graph
-						m_graph->addEdge((*top_iter)->net(), (*bottom_iter)->net());
+						m_graph->addEdge((*bottom_iter)->net(), (*top_iter)->net());
 					}
 				} else {
 					// Add vertex to graph
-					m_graph->addVertex((*top_iter)->net());
+					m_graph->addVertex((*bottom_iter)->net());
 				}
 			}
+			
+			// // Declare iterator for top terminal
+			// std::vector<ZTerm*>::iterator top_iter;
+
+			// // Iterate through top terminal
+			// for(top_iter=top_terms.begin(); top_iter != top_terms.end(); ++top_iter) {
+			// 	// Declare iterator for bottom terminal (Search terminal with same column)
+			// 	auto bottom_iter = std::find_if(bottom_terms.begin(), bottom_terms.end(), [top_iter](ZTerm* term) {
+			// 		return (*top_iter)->col() == term->col();
+			// 	});
+			// 	// Iterate through bottom terminal (searching terminal with same column)
+			// 	// Found column with top and bottom terminals
+			// 	if (bottom_iter != bottom_terms.end()) {
+			// 		// NOTE: Print terminal name
+			// 		std::cout << "Top terminal: " << (*top_iter)->m_owner_net->get_name() << "\t Bottom terminal: " << (*bottom_iter)->m_owner_net->get_name() << std::endl;
+					
+			// 		// Check whether top and bottom terminal are on the same net
+			// 		if ((*bottom_iter)->m_owner_net->get_name() == (*top_iter)->m_owner_net->get_name()) {
+			// 			// Add vertex to graph
+			// 			m_graph->addVertex((*top_iter)->net());
+			// 		} else {
+			// 			// Add new vertices and edge to graph
+			// 			m_graph->addEdge((*top_iter)->net(), (*bottom_iter)->net());
+			// 		}
+			// 	} else {
+			// 		// Add vertex to graph
+			// 		m_graph->addVertex((*top_iter)->net());
+			// 	}
+			// }
 
 			// NOTE: Print VCG
 			m_graph->printGraph();
@@ -560,6 +645,7 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 						} else {
 							std::cout << "Routing net: " << (*iter)->get_name() << std::endl;
 							std::cout << "Need to set net " << (*iter)->get_name() << " to route" << std::endl;
+							m_graph->printGraph();
 							m_graph->set_need2route(*iter);
 						}
 					}
@@ -574,14 +660,11 @@ class ZLeftEdgeChannelRouter: public ZChannelRouter {
 			// Print max number of tracks
 			std::cout << "Max number of tracks: " << get_maxtracks() << std::endl;
 
-			// Print tracks
-			for(auto iter = m_nets.begin(); iter != m_nets.end(); ++iter) {
-				if ((*iter)->get_parent_name().empty()) {
-					std::cout << "Net name: " << (*iter)->get_name() << " Track: " << get_net_track(*iter) << std::endl;
-				} else {
-					std::cout << "Net name: " << (*iter)->get_parent_name() << " Track: " << get_net_track(*iter) << std::endl;
-				}
-			}
+			// Sort route by name (printing purpose)
+			sort_route_by_name();
+
+			// Print result
+			print_result();
 		}
 };
 
