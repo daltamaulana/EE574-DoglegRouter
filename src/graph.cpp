@@ -94,11 +94,11 @@ void Graph::decrease_adj_level(ZNet* n) {
 		});
 
 		if (trans_adj[*j].size() == 1) {
-			if ((levels[*j] - levels[i]) > 0) {
+			if ((levels[*j] - levels[i]) > 1) {
 				levels[*j]--;
 			}
 		} else if ((trans_adj[*j].size() == 2) && (*iter == i)) {
-			if ((levels[*j] - levels[i]) > 0) {
+			if ((levels[*j] - levels[i]) > 1) {
 				levels[*j]--;
 			}
 		} else {
