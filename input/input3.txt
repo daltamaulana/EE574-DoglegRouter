@@ -1,0 +1,12 @@
+A 1 U
+A 3 U       
+B 4 U
+B 5 L   
+C 5 U
+C 1 L
+D 3 L
+D 6 L
+E 6 U
+E 2 L
+F 2 U
+F 0 L
